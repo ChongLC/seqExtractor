@@ -16,8 +16,10 @@ python seqExtractor.py -i exampleinput.fasta -l id_list.txt -o exampleoutput.fas
 ---
 
 ## Installation
-1. Download only the python code 
-wget https://raw.githubusercontent.com/ChongLC/seqExtractor/master/seqExtractor.py
+1. Download only the python code <br>
+    ```
+    wget https://raw.githubusercontent.com/ChongLC/seqExtractor/master/seqExtractor.py
+    ```
 
 2. Download the entire repo
 
