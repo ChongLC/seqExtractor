@@ -12,6 +12,15 @@ In the usage case below, the seqExtractor tool is applied to extract fasta seque
 ```
 python seqExtractor.py -i exampleinput.fasta -l id_list.txt -o exampleoutput.fasta
 ```
+
+---
+
+## Installation
+1. Download only the python code 
+wget https://raw.githubusercontent.com/ChongLC/seqExtractor/master/seqExtractor.py
+
+2. Download the entire repo
+
 ---
 
 ## Motivation and goal
