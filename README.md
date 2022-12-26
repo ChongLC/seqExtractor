@@ -6,11 +6,25 @@ Written by: [Li Chuin Chong](https://github.com/ChongLC) and [Yeo Keat Ee](https
 
 ## Usage
 ```
-python seqExtractor.py [-h] [-i INPUT] [-o OUTPUT] [-l ID_LIST]
+seqExtractor.py [-h] -i INPUT -l ID_LIST -o OUTPUT [-t THREADS]
+
+Extract fasta sequence records from multiFASTA file based on a list of record ids
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Filename include extension of original FASTA file
+  -l ID_LIST, --id_list ID_LIST
+                        Filename include extension of the sequence ID list
+  -o OUTPUT, --output OUTPUT
+                        Filename include extension of output FASTA file
+  -t THREADS, --threads THREADS
+                        Number of threads to use (default: 1)
+
 ```
 In the usage case below, the seqExtractor tool is applied to extract fasta sequences based on the id list (`id_list.txt`) from the input multiFASTA file (`exampleinput.fasta`), resulting an output file (`exampleoutput.fasta`).  
 ```
-python seqExtractor.py -i exampleinput.fasta -l id_list.txt -o exampleoutput.fasta
+python seqExtractor.py -i exampleinput.fasta -l id_list.txt -o exampleoutput.fasta -t 2
 ```
 
 ---
