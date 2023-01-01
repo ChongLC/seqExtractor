@@ -1,31 +1,6 @@
 # seqExtractor
-A python tool to extract multiple fasta sequence records from multiFASTA file based on a list of record ids. <br>
+A python tool to extract multiple fasta sequence records from multiFASTA file based on a list of record ids or a substring in the sequence header. <br>
 Written by: [Li Chuin Chong](https://github.com/ChongLC) and [Yeo Keat Ee](https://github.com/ee2110)
-
----
-
-## Usage
-```
-seqExtractor.py [-h] -i INPUT -l ID_LIST -o OUTPUT [-t THREADS]
-
-Extract fasta sequence records from multiFASTA file based on a list of record ids
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        Filename include extension of original FASTA file
-  -l ID_LIST, --id_list ID_LIST
-                        Filename include extension of the sequence ID list
-  -o OUTPUT, --output OUTPUT
-                        Filename include extension of output FASTA file
-  -t THREADS, --threads THREADS
-                        Number of threads to use (default: 1)
-
-```
-In the usage case below, the seqExtractor tool is applied to extract fasta sequences based on the id list (`id_list.txt`) from the input multiFASTA file (`exampleinput.fasta`), resulting an output file (`exampleoutput.fasta`).  
-```
-python seqExtractor.py -i exampleinput.fasta -l id_list.txt -o exampleoutput.fasta -t 2
-```
 
 ---
 
@@ -36,6 +11,56 @@ python seqExtractor.py -i exampleinput.fasta -l id_list.txt -o exampleoutput.fas
     ```
 
 2. Download the entire repo
+
+
+To use the `seqExtractor`, the following packages are needed to be installed: 
+- Biopython
+- argparse
+
+You can install these packages using `pip`: 
+```
+pip install biopython argparse
+```
+
+---
+
+## Usage
+```
+seqExtractor.py [-h] -i INPUT (-l ID_LIST | -s SUBSTRING) -o OUTPUT [-t THREADS] [-c]
+
+Extract fasta sequence records from multiFASTA file based on a list of record ids or a substring in the sequence header
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Filename include extension of original FASTA file
+  -l ID_LIST, --id_list ID_LIST
+                        Filename include extension of the sequence ID list
+  -s SUBSTRING, --substring SUBSTRING
+                        Substring to search for in the sequence header
+  -o OUTPUT, --output OUTPUT
+                        Filename include extension of output FASTA file
+  -t THREADS, --threads THREADS
+                        Number of threads to use (default: 1)
+  -c, --case_insensitive
+                        Make the substring search case insensitive (default: False)
+```
+There are two ways to use seqExtractor tool: 
+  - Extract sequences based on a list of sequence IDs: 
+    ```
+    python seqExtractor.py -i input.fasta -l id_list.txt -o output.fasta -t 4
+    ```
+
+  - Extract sequences based on a substring in the sequence header: 
+    - case sensitive (by default)
+      ```
+      python seqExtractor.py -i input.fasta -s Belgium -o output.fasta -t 4
+      ```
+    
+    - case insensitive
+      ```
+      python seqExtractor.py -i input.fasta -s belgium -o output.fasta -t 4 --case-insensitive
+      ```
 
 ---
 
