@@ -24,9 +24,9 @@ def read_fasta(fasta_file):
 
 def write_result(output_filename, results):
   with open(output_filename, 'w') as fp:
-      for lines in results:
-          fp.write("%s\n" % lines[0])
-          fp.write("%s\n" % lines[1])
+      for id, seq in results.items():
+          fp.write("%s\n" % id)
+          fp.write("%s\n" % seq[0])
           fp.write("\n")
 
 def generate_target(target_file):
@@ -41,48 +41,44 @@ def generate_target(target_file):
                 wanted.add(line)
     return list(wanted)
 
-def process_record(record, target, matched, mismatched, substring, method, case_insensitive, exclude):
+def process_record(record, target, matched, substring, method, case_insensitive, exclude):
     '''
     Process a single record and add it to the matched list 
     if its id is in the target list or its header contains the specified substring
     '''
-    if method == 'id_list':
+    # mismatched.append(list(record))
+    if method == 'id_list':              
         for i in target:
             if i in record[0]:
-                matched.append(list(record))
-            elif exclude:
-                mismatched.append(list(record))
+                matched[record[0]] = [record[1]]
 
     elif method == 'substring':
         if case_insensitive:
             if substring.lower() in record[0].lower(): 
-                matched.append(list(record))
-            elif exclude:
-                mismatched.append(list(record))
+                matched[record[0]] = [record[1]]
         else: 
             if substring in record[0]:
-                matched.append(list(record))
-            elif exclude:
-                mismatched.append(list(record))
+                matched[record[0]] = [record[1]]
 
 def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, method, substring=None, case_insensitive=False, exclude=False):
     '''
     Get the sequences that id matched with the id in the list or 
     header matched with the substring
     '''
-    matched = []
-    mismatched = []
+    matched = {}
     if method == 'id_list': 
         target = generate_target(target_file)
     elif method == 'substring': 
         target = None
     input_objects = read_fasta(input_fasta_file)
+    print('Input have {} lengths'.format(len(input_objects)))
     # Initialize a list to store the threads
     threads = []
+
     # Iterate over the record in the input file as dictionary 
     for record in input_objects.items():
         # Create a new thread to process this record
-        thread = threading.Thread(target=process_record, args=(record, target, matched, mismatched, substring, method, case_insensitive, exclude))
+        thread = threading.Thread(target=process_record, args=(record, target, matched, substring, method, case_insensitive, exclude))
         thread.start()
         threads.append(thread)
 
@@ -95,9 +91,12 @@ def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, met
         thread.join()
 
     if exclude:
+        mismatched = {k: [v] for k, v in input_objects.items() if k not in matched and v not in matched.values()}
         # Write the mismatched sequences to the result file
+        print('Using exclude, output file has {} lines.'.format(len(mismatched)))
         write_result(result_fasta_file, mismatched)
     else:
+        print('Output file has {} lines.'.format(len(matched)))
         # Write the matched sequences to the result file
         write_result(result_fasta_file, matched)
 
