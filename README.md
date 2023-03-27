@@ -17,9 +17,9 @@ To use the `seqExtractor`, the following packages are needed to be installed:
 - Biopython
 - argparse
 
-You can install these packages using `pip`: 
+You can install these packages by using following command: 
 ```
-pip install biopython argparse
+pip install -r requirements.txt
 ```
 
 ---
@@ -44,6 +44,8 @@ optional arguments:
                         Number of threads to use (default: 1)
   -c, --case_insensitive
                         Make the substring search case insensitive (default: False)
+  -e, --exclude
+                        Make the output FASTA file only contains excluded result (default: False)
 ```
 There are two ways to use seqExtractor tool: 
   - Extract sequences based on a list of sequence IDs: 

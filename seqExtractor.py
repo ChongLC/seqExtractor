@@ -8,10 +8,26 @@
 # Last updated: 1 Jan 2023                                                              #
 ##########################################################################################
 
-from Bio import SeqIO
 import argparse
 import time
 import threading
+
+def read_fasta(fasta_file):
+    header_sequence = {}
+    with open(fasta_file) as file_content:
+        for seqs in file_content:
+            if seqs.startswith(">") and seqs.endswith('\n'):
+                header = seqs.strip()
+            elif seqs != '\n':
+                header_sequence[header] = seqs.strip()
+    return header_sequence
+
+def write_result(output_filename, results):
+  with open(output_filename, 'w') as fp:
+      for id, seq in results.items():
+          fp.write("%s\n" % id)
+          fp.write("%s\n" % seq[0])
+          fp.write("\n")
 
 def generate_target(target_file):
     '''
@@ -25,41 +41,44 @@ def generate_target(target_file):
                 wanted.add(line)
     return list(wanted)
 
-def process_record(record, target, matched, substring, method, case_insensitive):
+def process_record(record, target, matched, substring, method, case_insensitive, exclude):
     '''
     Process a single record and add it to the matched list 
     if its id is in the target list or its header contains the specified substring
     '''
-    if method == 'id_list':
+    # mismatched.append(list(record))
+    if method == 'id_list':              
         for i in target:
-            if i in record.description:
-                matched.append(record)
-                break
-    elif method == 'substring':
-        if case_insensitive: 
-            if substring.lower() in record.description.lower(): 
-                matched.append(record)
-        else: 
-            if substring in record.description:
-                matched.append(record)
+            if i in record[0]:
+                matched[record[0]] = [record[1]]
 
-def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, method, substring=None, case_insensitive=False):
+    elif method == 'substring':
+        if case_insensitive:
+            if substring.lower() in record[0].lower(): 
+                matched[record[0]] = [record[1]]
+        else: 
+            if substring in record[0]:
+                matched[record[0]] = [record[1]]
+
+def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, method, substring=None, case_insensitive=False, exclude=False):
     '''
     Get the sequences that id matched with the id in the list or 
     header matched with the substring
     '''
-    matched = []
+    matched = {}
     if method == 'id_list': 
         target = generate_target(target_file)
     elif method == 'substring': 
         target = None
-    input_objects = SeqIO.parse(input_fasta_file, "fasta")
+    input_objects = read_fasta(input_fasta_file)
+    print('Input have {} sequences'.format(len(input_objects)))
     # Initialize a list to store the threads
     threads = []
-    # Iterate over the records in the input file
-    for record in input_objects:
+
+    # Iterate over the record in the input file as dictionary 
+    for record in input_objects.items():
         # Create a new thread to process this record
-        thread = threading.Thread(target=process_record, args=(record, target, matched, substring, method, case_insensitive))
+        thread = threading.Thread(target=process_record, args=(record, target, matched, substring, method, case_insensitive, exclude))
         thread.start()
         threads.append(thread)
 
@@ -70,8 +89,16 @@ def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, met
     # Wait for all threads to finish
     for thread in threads:
         thread.join()
-    # Write the matched sequences to the result file
-    SeqIO.write(matched, result_fasta_file, "fasta")
+
+    if exclude:
+        mismatched = {k: [v] for k, v in input_objects.items() if k not in matched and v not in matched.values()}
+        # Write the mismatched sequences to the result file
+        print('Using exclude, output file has {} sequences.'.format(len(mismatched)))
+        write_result(result_fasta_file, mismatched)
+    else:
+        print('Output file has {} matched sequences.'.format(len(matched)))
+        # Write the matched sequences to the result file
+        write_result(result_fasta_file, matched)
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -87,6 +114,7 @@ def parse_args():
     parser.add_argument('-o', '--output', required=True, help='Filename include extension of output FASTA file')
     parser.add_argument('-t', '--threads', type=int, default=1, help='Number of threads to use (default: 1)')
     parser.add_argument('-c', '--case_insensitive', action='store_true', help='Make the substring search case insensitive (default: False)')
+    parser.add_argument('-e', '--exclude', action="store_true", default=False, help="Option to exclude the sequences based on input ID list (default: False)")
 
     args = parser.parse_args()
 
@@ -100,11 +128,13 @@ def main():
     num_thread = args.threads
     substring = args.substring
     case_insensitive = args.case_insensitive
+    exclude = args.exclude
+
     if substring: 
         method = 'substring'
     else: 
         method = 'id_list'
-    extractor(id_list_file, input_file, output_file, num_thread, method, substring, case_insensitive)
+    extractor(id_list_file, input_file, output_file, num_thread, method, substring, case_insensitive, exclude)
     print("Done extracted!")
 
 if __name__ == '__main__':
