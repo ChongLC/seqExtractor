@@ -71,7 +71,7 @@ def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, met
     elif method == 'substring': 
         target = None
     input_objects = read_fasta(input_fasta_file)
-    print('Input have {} lengths'.format(len(input_objects)))
+    print('Input have {} sequences'.format(len(input_objects)))
     # Initialize a list to store the threads
     threads = []
 
@@ -93,10 +93,10 @@ def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, met
     if exclude:
         mismatched = {k: [v] for k, v in input_objects.items() if k not in matched and v not in matched.values()}
         # Write the mismatched sequences to the result file
-        print('Using exclude, output file has {} lines.'.format(len(mismatched)))
+        print('Using exclude, output file has {} sequences.'.format(len(mismatched)))
         write_result(result_fasta_file, mismatched)
     else:
-        print('Output file has {} lines.'.format(len(matched)))
+        print('Output file has {} matched sequences.'.format(len(matched)))
         # Write the matched sequences to the result file
         write_result(result_fasta_file, matched)
 
