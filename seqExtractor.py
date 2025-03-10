@@ -5,7 +5,7 @@
 # This script extracts fasta sequence records from multiFASTA file based on a list of    # 
 # record ids.                                                                            #
 # Inspired by faSomeRecords and further improved by Li Chuin Chong and Yeo Keat Ee.      #
-# Last updated: 16 August 2024                                                              #
+# Last updated: 10.03.2025                                                               #
 ##########################################################################################
 import os
 import sys
@@ -15,12 +15,22 @@ import threading
 
 def read_fasta(fasta_file):
     header_sequence = {}
-    with open(fasta_file) as file_content:
-        for seqs in file_content:
-            if seqs.startswith(">") and seqs.endswith('\n'):
-                header = seqs.strip()
-            elif seqs != '\n':
-                header_sequence[header] = seqs.strip()
+    header = None
+#    with open(fasta_file) as file_content:
+#        for seqs in file_content:
+#            if seqs.startswith(">") and seqs.endswith('\n'):
+#                header = seqs.strip()
+#            elif seqs != '\n':
+#                header_sequence[header] = seqs.strip()
+#    return header_sequence
+    with open(fasta_file) as file_content: 
+        for line in file_content: 
+            line = line.strip()
+            if line.startswith(">"):
+                header = line
+                header_sequence[header] = ""
+            elif line: 
+                header_sequence[header] += line
     return header_sequence
 
 def write_result(output_filename, results):
