@@ -5,10 +5,9 @@
 # This script extracts fasta sequence records from multiFASTA file based on a list of    # 
 # record ids.                                                                            #
 # Inspired by faSomeRecords and further improved by Li Chuin Chong and Yeo Keat Ee.      #
-# Last updated: 10.03.2025                                                               #
+# Last updated: 1 Jan 2023                                                              #
 ##########################################################################################
-import os
-import sys
+
 import argparse
 import time
 import threading
@@ -16,21 +15,22 @@ import threading
 def read_fasta(fasta_file):
     header_sequence = {}
     header = None
-#    with open(fasta_file) as file_content:
-#        for seqs in file_content:
-#            if seqs.startswith(">") and seqs.endswith('\n'):
-#                header = seqs.strip()
-#            elif seqs != '\n':
-#                header_sequence[header] = seqs.strip()
-#    return header_sequence
-    with open(fasta_file) as file_content: 
-        for line in file_content: 
+    sequence_lines = []
+    
+    with open(fasta_file) as file_content:
+        for line in file_content:
             line = line.strip()
             if line.startswith(">"):
+                if header is not None: 
+                    header_sequence[header] = "".join(sequence_lines)
                 header = line
-                header_sequence[header] = ""
-            elif line: 
-                header_sequence[header] += line
+                sequence_lines = []
+            else: 
+                sequence_lines.append(line)
+        
+        if header is not None: 
+            header_sequence[header] = "".join(sequence_lines)
+            
     return header_sequence
 
 def write_result(output_filename, results):
@@ -52,34 +52,24 @@ def generate_target(target_file):
                 wanted.add(line)
     return list(wanted)
 
-def is_surrounded_by_pipes(header, target_str):
-    # Check if the target string is surrounded by |
-    target_with_pipes = f'|{target_str}|'
-    return target_with_pipes in header
-
-def exact_match(header, target_str):
-    processed_header = header.split('>', 1)[1]
-    return processed_header == target_str
-
 def process_record(record, target, matched, substring, method, case_insensitive, exclude):
     '''
     Process a single record and add it to the matched list 
     if its id is in the target list or its header contains the specified substring
     '''
     # mismatched.append(list(record))
-    if method == 'id_list':        
+    if method == 'id_list':              
         for i in target:
-            if exact_match(record[0], i):
+            if i in record[0]:
                 matched[record[0]] = [record[1]]
 
-    elif method == 'substring_list':
-        for i in target:
-            if case_insensitive:
-                if i.lower() in record[0].lower(): 
-                    matched[record[0]] = [record[1]]
-            else: 
-                if i in record[0]:
-                    matched[record[0]] = [record[1]]
+    elif method == 'substring':
+        if case_insensitive:
+            if substring.lower() in record[0].lower(): 
+                matched[record[0]] = [record[1]]
+        else: 
+            if substring in record[0]:
+                matched[record[0]] = [record[1]]
 
 def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, method, substring=None, case_insensitive=False, exclude=False):
     '''
@@ -89,10 +79,8 @@ def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, met
     matched = {}
     if method == 'id_list': 
         target = generate_target(target_file)
-    elif method == 'substring_list': 
-        target = generate_target(target_file)
-    # elif method == 'one_substring':
-    #     target = 
+    elif method == 'substring': 
+        target = None
     input_objects = read_fasta(input_fasta_file)
     print('Input have {} sequences'.format(len(input_objects)))
     # Initialize a list to store the threads
@@ -131,13 +119,10 @@ def parse_args():
 
     # Add the arguments
     parser.add_argument('-i', '--input', required=True, help='Filename include extension of original FASTA file')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-l', '--id_list', help='Filename include extension of the sequence ID list')
+    group.add_argument('-s', '--substring', help='Substring to search for in the sequence header')
     parser.add_argument('-o', '--output', required=True, help='Filename include extension of output FASTA file')
-    
-    # group = parser.add_mutually_exclusive_group(required=True)
-    # group.add_argument('-l', '--id_list', required=True, help='Filename include extension of the sequence ID list')
-    # group.add_argument('-s', '--substring', help='Substring to search for in the sequence header')
-    parser.add_argument('-l', '--id_list', help='Filename include extension of the sequence ID list')
-    parser.add_argument('-s', '--substring',action='store_true', help='Substring to search for in the sequence header')
     parser.add_argument('-t', '--threads', type=int, default=1, help='Number of threads to use (default: 1)')
     parser.add_argument('-c', '--case_insensitive', action='store_true', help='Make the substring search case insensitive (default: False)')
     parser.add_argument('-e', '--exclude', action="store_true", default=False, help="Option to exclude the sequences based on input ID list (default: False)")
@@ -148,23 +133,16 @@ def parse_args():
 
 def main():
     args=parse_args()
-    if args.id_list is None and args.substring is None:
-        raise Exception("either one -l or -s is required")
-
-    num_thread = args.threads
     input_file = args.input
-    output_file = args.output
-
     id_list_file = args.id_list
+    output_file = args.output
+    num_thread = args.threads
     substring = args.substring
     case_insensitive = args.case_insensitive
     exclude = args.exclude
 
-    if substring and id_list_file:
-        print('substring mode selected...')
-        method = 'substring_list'
-    elif substring and not id_list_file:
-        method = 'one_substring'
+    if substring: 
+        method = 'substring'
     else: 
         method = 'id_list'
     extractor(id_list_file, input_file, output_file, num_thread, method, substring, case_insensitive, exclude)
