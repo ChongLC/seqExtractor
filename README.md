@@ -9,8 +9,12 @@ Written by: [Li Chuin Chong](https://github.com/ChongLC) and [Yeo Keat Ee](https
     ```
     wget https://raw.githubusercontent.com/ChongLC/seqExtractor/master/seqExtractor.py
     ```
+    OR
+    ```
+    curl -sO https://raw.githubusercontent.com/ChongLC/seqExtractor/master/seqExtractor.py
+    ```
 
-2. Download the entire repo
+3. Download the entire repo
 
 
 To use the `seqExtractor`, the following packages are needed to be installed: 
