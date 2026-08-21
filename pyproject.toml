@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seqextractor"
+version = "1.0.0"
+description = "Extract FASTA records from a multiFASTA file by ID list or header substring"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+  {name = "Li Chuin Chong"},
+  {name = "Yeo Keat Ee"},
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/ChongLC/seqExtractor"
+
+[project.scripts]
+seqextractor = "seqextractor:main"
+
+[tool.setuptools]
+py-modules = ["seqextractor"]

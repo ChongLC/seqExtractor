@@ -125,7 +125,7 @@ def extractor(target_file, input_fasta_file, result_fasta_file, num_threads, met
 
 def parse_args():
     parser = argparse.ArgumentParser(
-                        prog = 'seqExtractor.py',
+                        prog = 'seqextractor',
                         description = 'Extract fasta sequence records from multiFASTA file based on a list of record ids or a substring in the sequence header'
                         )
 

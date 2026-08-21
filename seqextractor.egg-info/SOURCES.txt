@@ -1,0 +1,9 @@
+LICENSE
+README.md
+pyproject.toml
+seqextractor.py
+seqextractor.egg-info/PKG-INFO
+seqextractor.egg-info/SOURCES.txt
+seqextractor.egg-info/dependency_links.txt
+seqextractor.egg-info/entry_points.txt
+seqextractor.egg-info/top_level.txt

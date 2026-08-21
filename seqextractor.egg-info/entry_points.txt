@@ -1,0 +1,2 @@
+[console_scripts]
+seqextractor = seqextractor:main
